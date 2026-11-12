@@ -1,57 +1,42 @@
-# Ride-hailing and Logistics Database Design
+# Ride-hailing and Logistics Relational Design
 
-## Case study description
+## Case study
 
-This database supports a local ride-hailing and parcel-delivery service. Customers create trip requests for either a passenger ride or a delivery. Each trip captures pickup and drop-off locations, the customer, an optional assigned driver, the fare and the current operational status. As the request progresses, status changes are stored as dated history events so staff can track dispatch, pickup and completion. Payment attempts are stored independently from trips, allowing failed attempts to be retained without changing the trip record.
+This database supports a local ride-hailing and parcel-delivery service. A customer requests a passenger ride or delivery. The system records endpoints, assigns an available driver, updates the current trip state and keeps a timestamped history of status changes. Payment attempts are tracked independently so a failed attempt can be retained before another succeeds.
 
-The design covers customer and driver records, locations, trips, trip-status history and payments. It assumes one customer, up to one assigned driver, one pickup and one drop-off per trip. It does not model live location streaming, route geometry, multi-stop journeys, dispatch algorithms, refunds or driver shifts.
+## Scope and assumptions
 
-## Entities
+A trip has one customer, one pickup and one drop-off location, and zero or one assigned driver. Drivers can serve either rides or deliveries and may have only one active trip at a time. There may be multiple payment attempts, but at most one successful payment per trip. Status history is append-oriented, and updates to current status plus history should be performed together in a transaction. The database schema does not enforce the full status transition graph; application/transaction logic must do that. GPS streaming, multi-stop routing, shifts, refunds and real payment processing are outside scope.
 
-| Entity | Information stored |
-| --- | --- |
-| `customer` | A person or organisation requesting trips. |
-| `driver` | A driver who may be assigned to fulfil trips. |
-| `location` | A reusable address and coordinate record used as a trip endpoint. |
-| `trip` | A ride or delivery request, assignment, endpoints, fare and current status. |
-| `trip_status_history` | Timestamped status events for tracking a trip's progress. |
-| `payment` | A payment attempt and its amount, method, provider reference and outcome. |
+## Relations, keys and constraints
 
-## Attributes, keys and constraints
+`PK` = primary key, `FK` = foreign key, `UK` = unique candidate key.
 
-`PK` means primary key, `FK` foreign key, and `UK` unique key. All primary keys are generated identity values.
-
-| Relation | Attributes and PostgreSQL types | Keys and important constraints |
+| Relation | Attributes | Keys and constraints |
 | --- | --- | --- |
-| `customer` | `customer_id BIGINT`, `full_name VARCHAR(120)`, `email VARCHAR(254)`, `phone VARCHAR(30)` | PK `customer_id`; email unique; all fields required. |
-| `driver` | `driver_id BIGINT`, `full_name VARCHAR(120)`, `email VARCHAR(254)`, `phone VARCHAR(30)`, `license_number VARCHAR(40)` | PK `driver_id`; email and license number unique; all fields required. |
-| `location` | `location_id BIGINT`, `label VARCHAR(120)`, `address_text VARCHAR(300)`, `latitude NUMERIC(9,6)`, `longitude NUMERIC(9,6)` | PK `location_id`; label/address required; coordinates are either both absent or both present and within geographic bounds. |
-| `trip` | `trip_id BIGINT`, `customer_id BIGINT`, `driver_id BIGINT NULL`, `service_type VARCHAR(12)`, `pickup_location_id BIGINT`, `dropoff_location_id BIGINT`, `requested_at TIMESTAMPTZ`, `status VARCHAR(20)`, `fare_amount NUMERIC(10,2)`, `currency CHAR(3)`, `started_at TIMESTAMPTZ NULL`, `completed_at TIMESTAMPTZ NULL` | PK `trip_id`; FKs to customer, optional driver and two locations; service/status enumerated by CHECK; fare nonnegative; completion cannot precede start; advanced statuses require a driver; completed/delivered statuses require completion time. |
-| `trip_status_history` | `status_event_id BIGINT`, `trip_id BIGINT`, `status VARCHAR(20)`, `changed_at TIMESTAMPTZ`, `note VARCHAR(300) NULL` | PK `status_event_id`; FK `trip_id`; status constrained to supported values. |
-| `payment` | `payment_id BIGINT`, `trip_id BIGINT`, `amount NUMERIC(10,2)`, `currency CHAR(3)`, `method VARCHAR(20)`, `status VARCHAR(12)`, `provider_reference VARCHAR(100) NULL`, `created_at TIMESTAMPTZ` | PK `payment_id`; FK `trip_id`; positive amount; method/status constrained; provider reference unique when supplied; partial unique index allows at most one successful payment per trip. |
+| `customer` | `customer_id BIGINT`, `full_name VARCHAR(120)`, `email VARCHAR(254)`, `phone VARCHAR(30)` | PK `customer_id`; email UK; required nonblank values. |
+| `driver` | `driver_id BIGINT`, `full_name VARCHAR(120)`, `email VARCHAR(254)`, `phone VARCHAR(30)`, `license_number VARCHAR(40)` | PK `driver_id`; email and licence number UK; required nonblank values. |
+| `location` | `location_id BIGINT`, `label VARCHAR(120)`, `address_text VARCHAR(300)`, `latitude NUMERIC(9,6) NULL`, `longitude NUMERIC(9,6) NULL` | PK `location_id`; coordinates jointly null/non-null and within valid ranges. |
+| `trip` | `trip_id BIGINT`, `customer_id BIGINT`, `driver_id BIGINT NULL`, `service_type VARCHAR(12)`, `pickup_location_id BIGINT`, `dropoff_location_id BIGINT`, `requested_at TIMESTAMPTZ`, `status VARCHAR(20)`, `fare_amount NUMERIC(10,2)`, `currency CHAR(3)`, `started_at TIMESTAMPTZ NULL`, `completed_at TIMESTAMPTZ NULL` | PK `trip_id`; customer, driver and two location FKs; enumerated service/status; nonnegative fare; uppercase 3-letter currency; active status requires driver; ride/delivery states are compatible; completion timestamp follows start and is required for completed/delivered. Partial unique index allows one active trip per driver. |
+| `trip_status_history` | `status_event_id BIGINT`, `trip_id BIGINT`, `status VARCHAR(20)`, `changed_at TIMESTAMPTZ`, `note VARCHAR(300) NULL` | PK `status_event_id`; trip FK; enumerated status. |
+| `payment` | `payment_id BIGINT`, `trip_id BIGINT`, `amount NUMERIC(10,2)`, `currency CHAR(3)`, `method VARCHAR(20)`, `status VARCHAR(12)`, `provider_reference VARCHAR(100) NULL`, `created_at TIMESTAMPTZ` | PK `payment_id`; trip FK; positive amount; enumerated method/status; optional unique provider reference; partial unique index allows one successful payment per trip. |
 
-## Relationships
+## Relationships and cardinalities
 
-| Relationship | Cardinality | Meaning |
-| --- | --- | --- |
-| Customer → Trip | 1 to 0..many | A customer can request many trips; each trip belongs to one customer. |
-| Driver → Trip | 1 to 0..many | A driver can fulfil many trips over time; a trip has zero or one assigned driver. |
-| Location → Trip (pickup) | 1 to 0..many | Each trip has exactly one pickup location; one location may be reused by many trips. |
-| Location → Trip (drop-off) | 1 to 0..many | Each trip has exactly one drop-off location; one location may be reused by many trips. |
-| Trip → Trip status history | 1 to 0..many | A trip may have many status events; each event belongs to one trip. |
-| Trip → Payment | 1 to 0..many | A trip may have multiple payment attempts; each payment attempt belongs to one trip. |
+- One customer may request zero or many trips; each trip has exactly one customer.
+- A driver may fulfil zero or many trips over time; each trip has zero or one driver. A partial unique index limits a driver to one active assignment.
+- Each trip has exactly one pickup and one drop-off location; a location may appear in many trips in either role.
+- A trip may have zero or many status-history events and zero or many payment attempts; each child row belongs to one trip.
 
 ## Business rules
 
-1. Customer email addresses are unique. Driver email addresses and licence numbers are each unique.
-2. A trip must reference an existing customer, pickup location and drop-off location. Its driver is optional until assignment and, if present, must reference an existing driver.
-3. `service_type` is either `ride` or `delivery`. Current trip statuses are `requested`, `matched`, `driver_arrived`, `in_progress`, `picked_up`, `completed`, `delivered` and `cancelled`.
-4. A trip in a post-request operational state (`matched`, `driver_arrived`, `in_progress`, `picked_up`, `completed` or `delivered`) must have an assigned driver. A cancellation may occur before or after assignment.
-5. Fare cannot be negative. A trip's completion time cannot be earlier than its start time. A completed ride or delivered parcel requires a completion time.
-6. Every status change should update `trip.status` and append a `trip_status_history` row atomically. The database does not by itself enforce legal status transitions or ensure that the latest history event equals the current status.
-7. A trip may have several payment attempts, including failed attempts, but no more than one payment may have `succeeded` status. Payment amount must be positive.
-8. Coordinates must be within latitude [-90, 90] and longitude [-180, 180], and both coordinates are either supplied together or omitted together.
+1. Customer email, driver email and driver licence number are unique.
+2. Foreign keys require every trip customer/location, any assigned driver, and every event/payment parent to exist.
+3. Service is `ride` or `delivery`. Supported statuses are `requested`, `matched`, `driver_arrived`, `in_progress`, `picked_up`, `completed`, `delivered` and `cancelled`; `picked_up`/`delivered` are delivery states, while `in_progress`/`completed` are ride states.
+4. A non-requested, non-cancelled operational trip must have a driver. A driver cannot have multiple active trips concurrently.
+5. Fare cannot be negative. Coordinates are optional as a pair and range-checked. Timestamps cannot complete before a recorded start.
+6. Completed trips require completion time. A production workflow should also validate allowed status transitions and require a successful payment amount/currency policy before closing a trip; cross-table business rules need transactional logic or other database mechanisms.
+7. Status updates and corresponding history inserts must succeed or fail together. The schema provides both relations but does not automatically maintain their consistency.
+8. Failed/pending payment attempts remain in the record. At most one payment per trip may be `succeeded`.
 
-## Why the model separates these entities
-
-Customer and driver details are held independently from trips, so a person's contact details are not repeated for each journey. Locations are stored once and referenced in the pickup/drop-off roles. Trip-status history preserves the sequence of operational updates, while payment attempts preserve their own outcomes and provider references. The ER diagram and normalisation note explain these separations in more detail.
+See the [ER diagram](Mandieng_RideHailing_P1_ERDiagram.md), [normalisation explanation](Mandieng_RideHailing_P1_Normalisation.md), and executable [schema](Mandieng_RideHailing_P1_Schema.sql) for the full model.

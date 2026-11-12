@@ -1,6 +1,5 @@
--- Ride-hailing and logistics service schema (PostgreSQL).
--- Run once in an empty database. Current trip status and its history must be
--- changed together by the application in one transaction.
+-- Ride-hailing/logistics database (PostgreSQL 16).
+-- Run once against an empty database. Status/history changes must be atomic.
 BEGIN;
 
 CREATE TABLE public.customer (
@@ -52,6 +51,12 @@ CREATE TABLE public.trip (
     completed_at TIMESTAMPTZ,
     CONSTRAINT trip_driver_required_after_request
         CHECK (status IN ('requested', 'cancelled') OR driver_id IS NOT NULL),
+    CONSTRAINT trip_service_status_compatible
+        CHECK (
+            (service_type = 'ride' AND status <> 'picked_up' AND status <> 'delivered')
+            OR
+            (service_type = 'delivery' AND status <> 'in_progress' AND status <> 'completed')
+        ),
     CONSTRAINT trip_completion_time_required
         CHECK (status NOT IN ('completed', 'delivered') OR completed_at IS NOT NULL),
     CONSTRAINT trip_completion_not_before_start
@@ -85,13 +90,16 @@ CREATE TABLE public.payment (
         CHECK (provider_reference IS NULL OR btrim(provider_reference) <> '')
 );
 
--- Keep lookup joins efficient and enforce one successful payment per trip.
 CREATE INDEX trip_customer_requested_idx
     ON public.trip (customer_id, requested_at DESC);
 CREATE INDEX trip_driver_status_idx
     ON public.trip (driver_id, status);
 CREATE INDEX trip_status_history_trip_time_idx
-    ON public.trip_status_history (trip_id, changed_at);
+    ON public.trip_status_history (trip_id, changed_at DESC);
+CREATE UNIQUE INDEX trip_one_active_assignment_per_driver
+    ON public.trip (driver_id)
+    WHERE driver_id IS NOT NULL
+      AND status IN ('matched', 'driver_arrived', 'in_progress', 'picked_up');
 CREATE UNIQUE INDEX payment_one_success_per_trip
     ON public.payment (trip_id)
     WHERE status = 'succeeded';

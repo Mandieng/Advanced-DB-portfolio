@@ -1,16 +1,16 @@
 # Portfolio 1 Evidence Checklist
 
-This checklist records evidence to capture when the schema is run in PostgreSQL. Screenshots are intentionally not included yet; do not mark a row complete until the corresponding evidence exists in `screenshots/`.
+Capture evidence after running the database and diagram. All items begin as pending; update this checklist only after the actual artifact is saved under `screenshots/`.
 
-| Evidence to capture | Suggested screenshot/file | Status |
+| Evidence | Suggested file | Status |
 | --- | --- | --- |
-| ER diagram rendered from the Mermaid source | `screenshots/Mandieng_RideHailing_P1_ERDiagram.png` | Pending |
-| Normalisation explanation | `screenshots/Mandieng_RideHailing_P1_Normalisation.png` | Pending |
-| Database connection and database name | `screenshots/Mandieng_RideHailing_P1_DatabaseConnection.png` | Pending |
-| Successful creation of all six tables and indexes | `screenshots/Mandieng_RideHailing_P1_TableCreation.png` | Pending |
-| Table list and key constraints | `screenshots/Mandieng_RideHailing_P1_TableList.png` | Pending |
-| Sample rows and final record counts | `screenshots/Mandieng_RideHailing_P1_SampleData.png` | Pending |
-| Expected rejection of invalid customer, FK, driver assignment, coordinates and payment rows | `screenshots/Mandieng_RideHailing_P1_ConstraintTests.png` | Pending |
-| Trip status history and payment-attempt query results | `screenshots/Mandieng_RideHailing_P1_TripTracking.png` | Pending |
+| Mermaid ER diagram rendered | `screenshots/Mandieng_RideHailing_P1_ERDiagram.png` | Pending |
+| 1NF, 2NF and 3NF explanation | `screenshots/Mandieng_RideHailing_P1_Normalisation.png` | Pending |
+| PostgreSQL container healthy and database connection | `screenshots/Mandieng_RideHailing_P1_DatabaseConnection.png` | Pending |
+| Six tables and indexes created | `screenshots/Mandieng_RideHailing_P1_TableCreation.png` | Pending |
+| Sample data and record counts | `screenshots/Mandieng_RideHailing_P1_SampleData.png` | Pending |
+| Constraint checks rejected by expected rules | `screenshots/Mandieng_RideHailing_P1_ConstraintTests.png` | Pending |
+| Status timeline and payment attempts query output | `screenshots/Mandieng_RideHailing_P1_TripTracking.png` | Pending |
+| Atomic match request demonstration | `screenshots/Mandieng_RideHailing_P1_Matching.png` | Pending |
 
-Capture the actual PostgreSQL client output after running the scripts. The test script's negative statements must be run one at a time; each should fail for its stated constraint, and expected failures should not be described as observed until verified.
+Run negative SQL statements one at a time. Keep actual terminal/database output in the screenshot; do not describe an expected result as a verified result until execution confirms it.
