@@ -1,6 +1,6 @@
 # Ride-hailing and Logistics ER Diagram
 
-The diagram shows the core records and their relationships. A location can be referenced in either the pickup or drop-off role. A driver assignment is optional for a newly requested trip.
+The diagram shows the core records and their relationships.
 
 ```mermaid
 erDiagram
