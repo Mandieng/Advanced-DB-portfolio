@@ -1,5 +1,5 @@
 -- Ride-hailing/logistics database (PostgreSQL 16).
--- Run once against an empty database. Status/history changes must be atomic.
+
 BEGIN;
 
 CREATE TABLE public.customer (

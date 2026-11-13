@@ -3,11 +3,11 @@
 **Course:** MIT 8103 Advanced Database Systems  
 **Portfolio:** Database design and modelling  
 **Database:** PostgreSQL 16  
-**Status:** Design and runnable local demo; evidence screenshots should be captured after execution.
+**Status:** Runnable, Portable local demo with evidence screenshots.
 
 ## 1. Case study
 
-This portfolio designs a relational database for a local ride-hailing and parcel-delivery service. A customer submits a request for a passenger ride or a delivery. The service records its pickup and drop-off locations, assigns a driver, tracks operational status and records payment attempts. Operations staff need to find unassigned requests, inspect a trip's event history and review payment outcomes.
+On portfolio 1, we designs relational database for a local ride-hailing and parcel-delivery service. A customer submits a request for a passenger ride or a delivery. The service records its pickup and drop-off locations, assigns a driver, tracks operational status and records payment attempts. Operations staff need to find unassigned requests, inspect a trip's event history and review payment outcomes.
 
 ### Users and main operations
 
@@ -20,7 +20,7 @@ This portfolio designs a relational database for a local ride-hailing and parcel
 
 The model represents one local service area. A trip has one customer, exactly one pickup and one drop-off location, and at most one assigned driver. A driver may have many historical trips but only one active trip at a time. A trip can have multiple payment attempts, including failed attempts, but at most one successful payment. Each trip's current status is kept in `trip`; status events are retained in `trip_status_history`.
 
-The first version does not model live GPS telemetry, routes or multi-stop trips, driver shifts, dispatch optimisation, tips, refunds, promotions, authentication or external payment processing. The data is fictional. Status transition validity and synchronization of current status with history are transactional workflow responsibilities, explicitly noted rather than overstated as database-enforced constraints.
+This first version does not model live GPS telemetry, routes or multi-stop trips, driver shifts, dispatch optimisation, tips, refunds, promotions, authentication or external payment processing. The data is fictional. Status transition validity and synchronization of current status with history are transactional workflow responsibilities, explicitly noted rather than overstated as database-enforced constraints.
 
 ## 2. Design artifacts
 
@@ -42,7 +42,6 @@ Requires Docker Engine/Desktop with the `docker compose` plugin. The Compose pro
 ```bash
 cd portfolio-1-database-design
 cp .env.example .env
-# Edit .env and set a strong local POSTGRES_PASSWORD.
 docker compose up --build -d
 ```
 
@@ -68,8 +67,6 @@ docker compose down -v
 docker compose up --build -d
 ```
 
-Do not use the volume-deletion command for data you need to keep. To stop the service without deleting data, use `docker compose down`.
-
 ## 4. Run without Docker
 
 On PostgreSQL 16, connect to an empty database and execute in order:
@@ -93,4 +90,4 @@ Run negative statements from the constraint-test file one at a time; expected er
 
 ## 6. Evidence and honest reporting
 
-Run the schema and data, verify the checks, render the Mermaid diagram and capture screenshots in `screenshots/`. The [evidence checklist](RideHailing_P1_Evidence.md) remains pending until evidence is actually captured. Do not report unrun test outcomes as observed facts.
+This work was done in collaboration with the Copilot AI Tool

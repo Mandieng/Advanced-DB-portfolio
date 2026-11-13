@@ -7,13 +7,12 @@ services:
     restart: unless-stopped
     environment:
       POSTGRES_DB: ${POSTGRES_DB:-ride_hailing}
-      POSTGRES_USER: ${POSTGRES_USER:-portfolio_user}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:?Set POSTGRES_PASSWORD in your local .env file}
-      # Keep PostgreSQL data in the named volume, not in the container layer.
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
       PGDATA: /var/lib/postgresql/data/pgdata
     ports:
       # Local-only binding; change only if remote exposure is intentional and secured.
-      - "127.0.0.1:${DB_PORT:-5432}:5432"
+      - "127.0.0.1:${DB_PORT}:5432"
     volumes:
       - ride_hailing_data:/var/lib/postgresql/data
     healthcheck:
