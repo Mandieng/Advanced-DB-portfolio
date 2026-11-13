@@ -1,0 +1,9 @@
+flowchart LR
+    A["Unnormalised trip log<br/>Customer, driver and location details repeat<br/>Status and payment lists are multi-valued"]
+    B["1NF<br/>Atomic values<br/>One row per trip, status event and payment attempt"]
+    C["2NF<br/>Separate trip facts from event and payment facts<br/>Use independent keys for each relation"]
+    D["3NF<br/>customer · driver · location<br/>trip · trip_status_history · payment"]
+
+    A -->|"Remove repeating lists"| B
+    B -->|"Separate facts by their full key"| C
+    C -->|"Move descriptive attributes to their entity"| D

@@ -26,14 +26,14 @@ The first version does not model live GPS telemetry, routes or multi-stop trips,
 
 | Artifact | Description |
 | --- | --- |
-| [Design](Mandieng_RideHailing_P1_Design.md) | Case study, entities, attributes, keys, relationships and business rules. |
-| [ER diagram](Mandieng_RideHailing_P1_ERDiagram.md) | Mermaid ER diagram with relationship cardinalities. |
-| [Normalisation](Mandieng_RideHailing_P1_Normalisation.md) | Worked 1NF, 2NF and 3NF explanation. |
-| [Schema](Mandieng_RideHailing_P1_Schema.sql) | PostgreSQL relations, constraints and indexes. |
-| [Sample data](Mandieng_RideHailing_P1_SampleData.sql) | Fictional customer, driver, location, trip, status and payment records. |
-| [Queries](Mandieng_RideHailing_P1_Queries.sql) | Operational reads and an atomic example of matching a request. |
-| [Constraint tests](Mandieng_RideHailing_P1_ConstraintTests.sql) | Negative checks to execute individually against a populated demo database. |
-| [Evidence checklist](Mandieng_RideHailing_P1_Evidence.md) | Evidence to capture after the local run; pending items are not claimed as completed. |
+| [Design](RideHailing_P1_Design.md) | Case study, entities, attributes, keys, relationships and business rules. |
+| [ER diagram](RideHailing_P1_ERDiagram.md) | Mermaid ER diagram with relationship cardinalities. |
+| [Normalisation](RideHailing_P1_Normalisation.md) | Worked 1NF, 2NF and 3NF explanation. |
+| [Schema](RideHailing_P1_Schema.sql) | PostgreSQL relations, constraints and indexes. |
+| [Sample data](RideHailing_P1_SampleData.sql) | Fictional customer, driver, location, trip, status and payment records. |
+| [Queries](RideHailing_P1_Queries.sql) | Operational reads and an atomic example of matching a request. |
+| [Constraint tests](RideHailing_P1_ConstraintTests.sql) | Negative checks to execute individually against a populated demo database. |
+| [Evidence checklist](RideHailing_P1_Evidence.md) | Evidence to capture after the local run; pending items are not claimed as completed. |
 
 ## 3. Run with Docker Compose
 
@@ -75,9 +75,9 @@ Do not use the volume-deletion command for data you need to keep. To stop the se
 On PostgreSQL 16, connect to an empty database and execute in order:
 
 ```bash
-psql -v ON_ERROR_STOP=1 -d ride_hailing -f Mandieng_RideHailing_P1_Schema.sql
-psql -v ON_ERROR_STOP=1 -d ride_hailing -f Mandieng_RideHailing_P1_SampleData.sql
-psql -v ON_ERROR_STOP=1 -d ride_hailing -f Mandieng_RideHailing_P1_Queries.sql
+psql -v ON_ERROR_STOP=1 -d ride_hailing -f RideHailing_P1_Schema.sql
+psql -v ON_ERROR_STOP=1 -d ride_hailing -f RideHailing_P1_SampleData.sql
+psql -v ON_ERROR_STOP=1 -d ride_hailing -f RideHailing_P1_Queries.sql
 ```
 
 Run negative statements from the constraint-test file one at a time; expected errors abort the current transaction when issued inside a transaction block.
@@ -89,10 +89,8 @@ Run negative statements from the constraint-test file one at a time; expected er
 - `CHECK` constraints validate enumerated values, nonblank required text, currency format, nonnegative fares, positive payments, coordinate ranges, and timestamp consistency.
 - A partial unique index prevents one driver from being assigned multiple active trips concurrently; another prevents multiple successful payments for the same trip.
 - Separate status-history and payment relations preserve event/attempt history without repeating it in a trip row.
-- See the [normalisation explanation](Mandieng_RideHailing_P1_Normalisation.md) for functional dependencies and decomposition.
+- See the [normalisation explanation](RideHailing_P1_Normalisation.md) for functional dependencies and decomposition.
 
 ## 6. Evidence and honest reporting
 
-Run the schema and data, verify the checks, render the Mermaid diagram and capture screenshots in `screenshots/`. The [evidence checklist](Mandieng_RideHailing_P1_Evidence.md) remains pending until evidence is actually captured. Do not report unrun test outcomes as observed facts.
-
-This is an educational local demonstration, not a production deployment. The sample credentials are placeholders; the `.env` file is ignored by Git. Never expose the database port publicly or use real personal/payment data.
+Run the schema and data, verify the checks, render the Mermaid diagram and capture screenshots in `screenshots/`. The [evidence checklist](RideHailing_P1_Evidence.md) remains pending until evidence is actually captured. Do not report unrun test outcomes as observed facts.

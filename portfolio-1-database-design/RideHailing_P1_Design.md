@@ -39,4 +39,4 @@ A trip has one customer, one pickup and one drop-off location, and zero or one a
 7. Status updates and corresponding history inserts must succeed or fail together. The schema provides both relations but does not automatically maintain their consistency.
 8. Failed/pending payment attempts remain in the record. At most one payment per trip may be `succeeded`.
 
-See the [ER diagram](Mandieng_RideHailing_P1_ERDiagram.md), [normalisation explanation](Mandieng_RideHailing_P1_Normalisation.md), and executable [schema](Mandieng_RideHailing_P1_Schema.sql) for the full model.
+See the [ER diagram](RideHailing_P1_ERDiagram.md), [normalisation explanation](RideHailing_P1_Normalisation.md), and executable [schema](RideHailing_P1_Schema.sql) for the full model.
