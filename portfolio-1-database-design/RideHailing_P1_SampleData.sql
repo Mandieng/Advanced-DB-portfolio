@@ -1,5 +1,5 @@
 -- Fictional sample records for the ride-hailing/logistics schema.
--- Run after Mandieng_RideHailing_P1_Schema.sql.
+-- Run after RideHailing_P1_Schema.sql.
 BEGIN;
 
 INSERT INTO public.customer (full_name, email, phone) VALUES
